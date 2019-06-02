@@ -40,36 +40,36 @@ public class BlackjackClient {
       int newCard;
       
       do {
-        switch (state) {
-          case IN_GAME:
-            System.out.print("[hit/stick]: ");
-            System.out.flush();
-            cmd = in.nextLine();
-            send(pw, cmd);
-            if (cmd.equals("stick")) {
-              state = ClientState.STICK;
-            } else { // cmd.equals("hit");
-              newCard = Integer.valueOf(receive(sc));
-              System.out.print("Kapott lap erteke: " + newCard + "   ");
-              inHand += newCard;
-            }
-            String msg = receive(sc);
-//          if (inHand > 21) {inGame = false;}
-            if (msg.equals(ClientState.BUST.getValue())) {
+        if (state == ClientState.IN_GAME) {
+          System.out.print("[hit/stick]: ");
+          System.out.flush();
+          cmd = in.nextLine();
+          send(pw, cmd);
+          if (cmd.equals("stick")) {
+            state = ClientState.STICK;
+          } else { // cmd.equals("hit");
+            newCard = Integer.valueOf(receive(sc));
+            System.out.print("Kapott lap erteke: " + newCard + "   ");
+            inHand += newCard;
+            if (inHand > 21) {
               state = ClientState.BUST;
-              System.out.println(msg);
-            } else {
-              try {  
-                Integer.parseInt(msg);
-              } catch (NumberFormatException ex) {
-                state = ClientState.FINISHED;
-              }
-              if (state != ClientState.FINISHED) {
-                System.out.println("Kezben: " + msg + "(helyben szamolt: " + inHand);
-              } else {
-                System.out.println("\nA nyertes neve: " + msg);
-              }
             }
+          }
+        }
+        String msg = receive(sc);
+        if (msg.equals(ClientState.BUST.getValue())) {
+          System.out.println(msg);
+        } else {
+          try {  
+            Integer.parseInt(msg);
+          } catch (NumberFormatException ex) {
+            state = ClientState.FINISHED;
+          }
+          if (state != ClientState.FINISHED) {
+            System.out.println("Kezben: " + msg + " (helyben szamolt: " + inHand + ")");
+          } else {
+            System.out.println("\nA nyertes neve: " + msg);
+          }
         }
       } while (state != ClientState.FINISHED);
     } catch (IOException ex) {
